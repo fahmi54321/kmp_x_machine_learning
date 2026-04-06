@@ -1,4 +1,4 @@
-# NutriSport - Kotlin Multiplatform Project (KMP)
+# KmpXMachineLearning - Kotlin Multiplatform Project (KMP)
 
 Repository ini merupakan proyek **Kotlin Multiplatform (KMP)** yang mengintegrasikan Android & iOS dengan **Firebase** dan **Google Sign-In**.
 

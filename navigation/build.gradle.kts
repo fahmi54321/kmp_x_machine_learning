@@ -40,13 +40,8 @@ kotlin {
             implementation(libs.compose.navigation)
             implementation(libs.kotlinx.serialization)
 
-            implementation(project(path = ":feature:auth"))
             implementation(project(path = ":feature:home"))
-            implementation(project(path = ":feature:home:categories:category_search"))
-            implementation(project(path = ":feature:details"))
-            implementation(project(path = ":feature:profile"))
-            implementation(project(path = ":feature:admin_panel"))
-            implementation(project(path = ":feature:admin_panel:manage_product"))
+            implementation(project(path = ":feature:salary"))
             implementation(project(path = ":shared"))
         }
         commonTest.dependencies {
@@ -56,7 +51,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.nutrisport.auth"
+    namespace = "com.kmpxmachinelearning.auth"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {

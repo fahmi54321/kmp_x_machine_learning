@@ -31,21 +31,6 @@ kotlin {
         homepage = "https://your-link.com"
         version = "1.0.0"
         ios.deploymentTarget = "14.0"
-
-        // Firebase core
-        pod("FirebaseCore")
-
-        // Firebase Auth (WAJIB untuk login)
-        pod("FirebaseAuth")
-
-        // Firestore
-        pod("FirebaseFirestore")
-
-        // Storage
-        pod("FirebaseStorage")
-
-        // Google Sign-In (karena kamu pakai kmpauth-google)
-        pod("GoogleSignIn")
     }
 
     sourceSets {
@@ -67,11 +52,18 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
             implementation(libs.kotlinx.serialization)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.logging)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.client.serialization)
 
             implementation(libs.coil3)
             implementation(libs.coil3.compose)
             implementation(libs.coil3.compose.core)
             implementation(libs.coil3.network.ktor)
+
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -80,7 +72,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.nutrisport.shared"
+    namespace = "com.kmpxmachinelearning.shared"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {

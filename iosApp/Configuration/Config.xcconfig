@@ -1,6 +1,6 @@
 TEAM_ID=
 
-PRODUCT_NAME=NutriSport
+PRODUCT_NAME=KmpXMachineLearning
 PRODUCT_BUNDLE_IDENTIFIER=com.example.nutrisport.NutriSport$(TEAM_ID)
 
 CURRENT_PROJECT_VERSION=1

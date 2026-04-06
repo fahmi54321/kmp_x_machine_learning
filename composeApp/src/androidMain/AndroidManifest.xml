@@ -10,7 +10,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.NutriSport.Spalash">
+        android:usesCleartextTraffic="true"
+        android:theme="@style/Theme.KmpXMachineLearning.Spalash">
         <activity
             android:exported="true"
             android:name=".MainActivity">

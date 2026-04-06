@@ -1,4 +1,4 @@
-rootProject.name = "NutriSport"
+rootProject.name = "KmpXMachineLearning"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
@@ -43,6 +43,7 @@ include(":feature:home:categories:category_search")
 include(":feature:home:products_overview")
 include(":feature:home")
 include(":feature:profile")
+include(":feature:salary")
 include(":feature:auth")
 include(":navigation")
 include(":composeApp")

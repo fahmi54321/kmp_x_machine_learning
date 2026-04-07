@@ -49,7 +49,7 @@ kotlin {
             implementation(libs.ktor.client.core)
 
             implementation(project(path = ":feature:home"))
-            implementation(project(path = ":feature:salary"))
+            implementation(project(path = ":feature:home:salary"))
             implementation(project(path = ":shared"))
         }
         commonTest.dependencies {

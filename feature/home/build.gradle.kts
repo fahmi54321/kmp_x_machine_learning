@@ -38,7 +38,7 @@ kotlin {
             implementation(libs.compose.navigation)
 
             implementation(project(path = ":shared"))
-            implementation(project(path = ":feature:salary"))
+            implementation(project(path = ":feature:home:salary"))
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

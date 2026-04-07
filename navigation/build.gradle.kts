@@ -41,7 +41,7 @@ kotlin {
             implementation(libs.kotlinx.serialization)
 
             implementation(project(path = ":feature:home"))
-            implementation(project(path = ":feature:salary"))
+            implementation(project(path = ":feature:home:salary"))
             implementation(project(path = ":shared"))
         }
         commonTest.dependencies {

@@ -34,73 +34,68 @@ fun SalaryScreen() {
     val viewModel = koinViewModel<SalaryViewModel>()
     val state by viewModel.state.collectAsState()
 
-    Scaffold { padding ->
-        BgApp(
-            padding = padding,
+    BgApp{
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(32.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState())
-                    .padding(32.dp)
-            ) {
-                PrimaryCard {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+            PrimaryCard {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
 
-                        CustomOutlinedTextField(
-                            label = "HR Salary Predictor",
-                            value = state.level,
-                            onValueChange = viewModel::onLevelChange,
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Decimal,
-                            )
+                    CustomOutlinedTextField(
+                        label = "HR Salary Predictor",
+                        value = state.level,
+                        onValueChange = viewModel::onLevelChange,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Decimal,
                         )
+                    )
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                        PrimaryButton(
-                            text = "Predict Salary",
-                            onClick = viewModel::predict
+                    PrimaryButton(
+                        text = "Predict Salary",
+                        onClick = viewModel::predict
+                    )
+
+                    Spacer(modifier = Modifier.height(30.dp))
+
+                    if (state.salaryEntity?.salaryFormatted?.isNotEmpty() == true) {
+                        SalaryHeader(
+                            salary = state.salaryEntity?.salaryFormatted ?: "-",
+                            category = state.salaryEntity?.category ?: "-"
                         )
-
                         Spacer(modifier = Modifier.height(30.dp))
-
-                        if (state.salaryEntity?.salaryFormatted?.isNotEmpty() == true) {
-                            SalaryHeader(
-                                salary = state.salaryEntity?.salaryFormatted ?: "-",
-                                category = state.salaryEntity?.category ?: "-"
-                            )
-                            Spacer(modifier = Modifier.height(30.dp))
-                            ChartContainer {
-                                SalaryChart(
-                                    curve = state.salaryEntity?.curve?.map {
-                                        HrPointEntity(x = it.x.toFloat(), y = it.y.toFloat())
-                                    }?.toList() ?: emptyList(),
-                                    real = state.salaryEntity?.realData?.map {
-                                        HrPointEntity(x = it.x.toFloat(), y = it.y.toFloat())
-                                    }?.toList() ?: emptyList(),
-                                    user = HrPointEntity(
-                                        x = viewModel.touchedSpot?.x?.toFloat() ?: 0f,
-                                        y = viewModel.touchedSpot?.y?.toFloat() ?: 0f,
-                                    ),
-                                    onTouch = {
-                                        viewModel.updateTouchedSpot(
-                                            PointEntity(
-                                                it?.x?.toDouble() ?: 0.0,
-                                                it?.y?.toDouble() ?: 0.0,
-                                            )
+                        ChartContainer {
+                            SalaryChart(
+                                curve = state.salaryEntity?.curve?.map {
+                                    HrPointEntity(x = it.x.toFloat(), y = it.y.toFloat())
+                                }?.toList() ?: emptyList(),
+                                real = state.salaryEntity?.realData?.map {
+                                    HrPointEntity(x = it.x.toFloat(), y = it.y.toFloat())
+                                }?.toList() ?: emptyList(),
+                                user = HrPointEntity(
+                                    x = viewModel.touchedSpot?.x?.toFloat() ?: 0f,
+                                    y = viewModel.touchedSpot?.y?.toFloat() ?: 0f,
+                                ),
+                                onTouch = {
+                                    viewModel.updateTouchedSpot(
+                                        PointEntity(
+                                            it?.x?.toDouble() ?: 0.0,
+                                            it?.y?.toDouble() ?: 0.0,
                                         )
-                                    },
-                                    formatUSD = viewModel::formatUSD,
-                                )
-                            }
-                            SalaryChartLegend()
+                                    )
+                                },
+                                formatUSD = viewModel::formatUSD,
+                            )
                         }
+                        SalaryChartLegend()
                     }
                 }
             }
         }
-
     }
 }

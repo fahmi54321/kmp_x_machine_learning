@@ -21,8 +21,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 
 data class HrPointEntity(
@@ -39,26 +43,34 @@ fun SalaryChart(
     formatUSD: (Double) -> String,
 ) {
     var touchedPoint by remember { mutableStateOf<HrPointEntity?>(null) }
+    var canvasSize by remember { mutableStateOf(IntSize.Zero) }
+
+    val maxX = 11f
+    val maxY = (curve.maxOfOrNull { it.y } ?: 1f) * 1.2f
+
+    // GLOBAL MAPPER
+    val mapXGlobal: (Float) -> Float = { x ->
+        canvasSize.width * (x / maxX)
+    }
+
+    val mapYGlobal: (Float) -> Float = { y ->
+        canvasSize.height - (canvasSize.height * (y / maxY))
+    }
 
     Box {
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(300.dp)
+                .onSizeChanged { canvasSize = it }
                 .pointerInput(Unit) {
                     detectTapGestures { offset ->
 
-                        val maxX = 11f
-                        val maxY = (curve.maxOfOrNull { it.y } ?: 1f) * 1.2f
-
-                        fun mapX(x: Float) = size.width * (x / maxX)
-                        fun mapY(y: Float) = size.height - (size.height * (y / maxY))
-
                         val nearest = findNearestPoint(
-                            offset,
-                            curve + real + listOfNotNull(user),
-                            ::mapX,
-                            ::mapY
+                            touch = offset,
+                            points = curve + real + listOfNotNull(user),
+                            mapX = mapXGlobal,
+                            mapY = mapYGlobal
                         )
 
                         touchedPoint = nearest
@@ -67,119 +79,29 @@ fun SalaryChart(
                 }
         ) {
 
-            val maxX = 11f
-            val maxY = (curve.maxOfOrNull { it.y } ?: 1f) * 1.2f
+            val mapX: (Float) -> Float = { x -> size.width * (x / maxX) }
+            val mapY: (Float) -> Float = { y -> size.height - (size.height * (y / maxY)) }
 
-            fun mapX(x: Float) = size.width * (x / maxX)
-            fun mapY(y: Float) = size.height - (size.height * (y / maxY))
+            // LINE
+            drawSmoothLine(curve, Color(0xFF42A5F5), mapX, mapY)
 
-            // DRAW LINE
-            fun drawSmoothLine(points: List<HrPointEntity>, color: Color) {
-                val path = Path()
-
-                points.forEachIndexed { i, p ->
-                    val x = mapX(p.x)
-                    val y = mapY(p.y)
-
-                    if (i == 0) {
-                        path.moveTo(x, y)
-                    } else {
-                        val prev = points[i - 1]
-                        val px = mapX(prev.x)
-                        val py = mapY(prev.y)
-
-                        val midX = (px + x) / 2
-
-                        path.quadraticTo(px, py, midX, (py + y) / 2)
-                        path.quadraticTo(x, y, x, y)
-                    }
-                }
-
-                // LINE (utama)
-                drawPath(
-                    path = path,
-                    color = color,
-                    style = Stroke(width = 3f)
-                )
-
-                val gradientPath = Path().apply {
-                    addPath(path)
-                    lineTo(size.width, size.height)
-                    lineTo(0f, size.height)
-                    close()
-                }
-
-                drawPath(
-                    path = gradientPath,
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            color.copy(alpha = 0.3f),
-                            Color.Transparent
-                        )
-                    )
-                )
-            }
-
-            drawSmoothLine(curve, Color(0xFF42A5F5))
-            drawSmoothLine(real, Color.Red)
-
+            // USER POINT
             user?.let {
-                val center = Offset(mapX(it.x), mapY(it.y))
-
-                // outer glow
-                drawCircle(
-                    color = Color(0xFF00E676).copy(alpha = 0.3f),
-                    radius = 18f,
-                    center = center
-                )
-
-                // white border
-                drawCircle(
-                    color = Color.White,
-                    radius = 10f,
-                    center = center
-                )
-
-                // inner
-                drawCircle(
-                    color = Color(0xFF00E676),
-                    radius = 7f,
-                    center = center
-                )
+                drawUserPoint(it, mapX, mapY)
             }
 
-            // DOT
-            fun drawDots(points: List<HrPointEntity>, color: Color) {
-                points.forEach { p ->
-                    val isTouched = touchedPoint?.x == p.x && touchedPoint?.y == p.y
-
-                    val center = Offset(mapX(p.x), mapY(p.y))
-
-                    // OUTLINE
-                    drawCircle(
-                        color = Color.White,
-                        radius = if (isTouched) 10f else 6f,
-                        center = center
-                    )
-
-                    // INNER
-                    drawCircle(
-                        color = color,
-                        radius = if (isTouched) 7f else 4f,
-                        center = center
-                    )
-                }
-            }
-
-            drawDots(curve, Color.Blue)
-            drawDots(real, Color.Red)
+            // DOTS
+            drawDots(curve, Color.Blue, touchedPoint, mapX, mapY)
+            drawDots(real, Color.Red, touchedPoint, mapX, mapY)
         }
 
         // TOOLTIP
-        touchedPoint?.let { point ->
+        touchedPoint?.let {
             TooltipOverlay(
-                point = point,
-                formatUSD = formatUSD
+                point = it,
+                formatUSD = formatUSD,
+                mapX = mapXGlobal,
+                mapY = mapYGlobal
             )
         }
     }
@@ -191,12 +113,11 @@ fun findNearestPoint(
     mapX: (Float) -> Float,
     mapY: (Float) -> Float
 ): HrPointEntity? {
-    return points.minByOrNull {
-        val px = mapX(it.x)
-        val py = mapY(it.y)
+    if (points.isEmpty()) return null
 
-        val dx = touch.x - px
-        val dy = touch.y - py
+    return points.minByOrNull { point ->
+        val dx = touch.x - mapX(point.x)
+        val dy = touch.y - mapY(point.y)
         dx * dx + dy * dy
     }
 }
@@ -204,17 +125,99 @@ fun findNearestPoint(
 @Composable
 fun TooltipOverlay(
     point: HrPointEntity,
-    formatUSD: (Double) -> String
+    formatUSD: (Double) -> String,
+    mapX: (Float) -> Float,
+    mapY: (Float) -> Float
 ) {
+    val x = mapX(point.x)
+    val y = mapY(point.y)
+
     Box(
         modifier = Modifier
-            .offset(80.dp, 40.dp)
+            .offset {
+                IntOffset(
+                    x.toInt() - 120, // geser biar ke kiri
+                    y.toInt() - 100  // geser ke atas titik
+                )
+            }
             .background(Color(0xFF1E1E1E), RoundedCornerShape(12.dp))
             .padding(12.dp)
     ) {
         Column {
-            Text("Level ${point.x}", color = Color.White)
-            Text(formatUSD(point.y.toDouble()), color = Color.Green)
+            Text(
+                text = "Level ${point.x}",
+                color = Color.White
+            )
+            Text(
+                text = formatUSD(point.y.toDouble()),
+                color = Color(0xFF00E676)
+            )
         }
     }
+}
+
+fun DrawScope.drawSmoothLine(
+    points: List<HrPointEntity>,
+    color: Color,
+    mapX: (Float) -> Float,
+    mapY: (Float) -> Float
+) {
+    val path = Path()
+
+    points.forEachIndexed { i, p ->
+        val x = mapX(p.x)
+        val y = mapY(p.y)
+
+        if (i == 0) {
+            path.moveTo(x, y)
+        } else {
+            val prev = points[i - 1]
+            val px = mapX(prev.x)
+            val py = mapY(prev.y)
+
+            val midX = (px + x) / 2
+
+            path.quadraticTo(px, py, midX, (py + y) / 2)
+            path.quadraticTo(x, y, x, y)
+        }
+    }
+
+    drawPath(path, color, style = Stroke(width = 3f))
+}
+
+fun DrawScope.drawDots(
+    points: List<HrPointEntity>,
+    color: Color,
+    touchedPoint: HrPointEntity?,
+    mapX: (Float) -> Float,
+    mapY: (Float) -> Float
+) {
+    points.forEach { p ->
+        val isTouched = touchedPoint?.x == p.x && touchedPoint?.y == p.y
+        val center = Offset(mapX(p.x), mapY(p.y))
+
+        drawCircle(Color.White, if (isTouched) 10f else 6f, center)
+        drawCircle(color, if (isTouched) 7f else 4f, center)
+    }
+}
+
+fun DrawScope.drawUserPoint(
+    point: HrPointEntity,
+    mapX: (Float) -> Float,
+    mapY: (Float) -> Float
+) {
+    val center = Offset(mapX(point.x), mapY(point.y))
+
+    drawCircle(Color(0xFF00E676).copy(alpha = 0.3f), 18f, center)
+    drawCircle(Color.White, 10f, center)
+    drawCircle(Color(0xFF00E676), 7f, center)
+}
+
+fun isStepData(points: List<HrPointEntity>): Boolean {
+    if (points.size < 3) return false
+
+    val flatCount = points.zipWithNext().count { it.first.y == it.second.y }
+    val ratio = flatCount.toFloat() / (points.size - 1)
+
+    return ratio > 0.6f
 }

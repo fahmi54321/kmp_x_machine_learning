@@ -12,17 +12,12 @@ import com.kmpxmachinelearning.shared.GradientPrimary
 
 @Composable
 fun BgApp(
-    padding: PaddingValues,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ){
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(
-                top = padding.calculateTopPadding(),
-                bottom = padding.calculateBottomPadding()
-            )
             .background(
                 brush = GradientPrimary,
             ),

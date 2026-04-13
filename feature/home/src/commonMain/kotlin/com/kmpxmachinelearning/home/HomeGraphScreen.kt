@@ -127,7 +127,7 @@ fun HomeGraphScreen(
             .fillMaxSize()
             .background(GradientPrimary)
             .background(overlay)
-            .systemBarsPadding()
+//            .systemBarsPadding()
     ) {
 
         Box(

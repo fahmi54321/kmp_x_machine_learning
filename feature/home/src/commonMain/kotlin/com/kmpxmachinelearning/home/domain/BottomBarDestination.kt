@@ -15,13 +15,13 @@ enum class BottomBarDestination(
         screen = Screen.Salary
     ),
     Soon1(
-        icon = Resources.Icon.Home,
+        icon = Resources.Icon.Book,
         title = "Soon 1",
         screen = Screen.Soon1
     ),
 
     Soon2(
-        icon = Resources.Icon.Home,
+        icon = Resources.Icon.Unlock,
         title = "Soon 2",
         screen = Screen.Soon2
     ),
